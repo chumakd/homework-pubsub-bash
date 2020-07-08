@@ -4,8 +4,7 @@ set -eo pipefail
 ### pubsub client
 
 # constants
-readonly SELF="$(readlink -f $0)"
-readonly BASE_DIR="${SELF%/*}"
+readonly BASE_DIR="${0%/*}"
 readonly PROG_NAME="${0##*/}"
 
 # variables
