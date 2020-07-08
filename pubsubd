@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 set -eo pipefail
 
 ### pubsub daemon (invoked by `shell2http` in CGI mode)
