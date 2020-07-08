@@ -14,6 +14,7 @@ verbose=false
 source $BASE_DIR/pubsub-lib.sh
 
 usage() {
+    # TODO: update usage
     cat <<USAGE_END
 Usage: $PROG_NAME [options]
 
