@@ -1,0 +1,699 @@
+--> Starting pubsubd container in background
+762252d5587dd268f928fd5338f493c7dabeeafeeb76191ffef12f135d674b47
+test [debug] main(): initialize docker logs counter for pubsubd-test container
+2020/07/08 15:51:34 register: / (pubsubd --verbose)
+2020/07/08 15:51:34 listen http://localhost:3000/
+--> Subscribing to topic T1
+test [debug] main(): subscribing A -> T1
+test [debug] main(): subscribing B -> T1
+test [debug] main(): subscribing C -> T1
+test [debug] main(): waiting for all pubsubc calls to complete
+pubsubc [debug] cmd_subscribe(): C -> T1: {"error":{"status":"OK","code":200,"message":""}}
+pubsubc [debug] cmd_subscribe(): A -> T1: {"error":{"status":"OK","code":200,"message":""}}
+pubsubc [debug] cmd_subscribe(): B -> T1: {"error":{"status":"OK","code":200,"message":""}}
+pubsubd [debug] subscribe(): creating new topic 'T1'
+pubsubd [debug] subscribe(): creating new topic 'T1'
+pubsubd [debug] subscribe(): creating new topic 'T1'
+pubsubd [debug] subscribe(): 'C' has subscribed to 'T1'
+pubsubd [debug] subscribe(): 'A' has subscribed to 'T1'
+pubsubd [debug] subscribe(): 'B' has subscribed to 'T1'
+2020/07/08 15:51:35 localhost:3000 172.17.0.1:51760 "GET /topics/T1/subscribe?name=C" 200 50 "curl/7.58.0" 27ms
+2020/07/08 15:51:35 localhost:3000 172.17.0.1:51764 "GET /topics/T1/subscribe?name=A" 200 50 "curl/7.58.0" 26ms
+2020/07/08 15:51:35 localhost:3000 172.17.0.1:51758 "GET /topics/T1/subscribe?name=B" 200 50 "curl/7.58.0" 30ms
+--> Subscribing to topic T2
+test [debug] main(): subscribing A -> T2
+test [debug] main(): subscribing B -> T2
+test [debug] main(): waiting for all pubsubc calls to complete
+pubsubc [debug] cmd_subscribe(): A -> T2: {"error":{"status":"OK","code":200,"message":""}}
+pubsubc [debug] cmd_subscribe(): B -> T2: {"error":{"status":"OK","code":200,"message":""}}
+pubsubd [debug] subscribe(): creating new topic 'T2'
+pubsubd [debug] subscribe(): creating new topic 'T2'
+pubsubd [debug] subscribe(): 'A' has subscribed to 'T2'
+pubsubd [debug] subscribe(): 'B' has subscribed to 'T2'
+2020/07/08 15:51:35 localhost:3000 172.17.0.1:51768 "GET /topics/T2/subscribe?name=A" 200 50 "curl/7.58.0" 7ms
+2020/07/08 15:51:35 localhost:3000 172.17.0.1:51772 "GET /topics/T2/subscribe?name=B" 200 50 "curl/7.58.0" 8ms
+--> Subscribing to topic T3
+test [debug] main(): subscribing A -> T3
+test [debug] main(): waiting for all pubsubc calls to complete
+pubsubc [debug] cmd_subscribe(): A -> T3: {"error":{"status":"OK","code":200,"message":""}}
+pubsubd [debug] subscribe(): creating new topic 'T3'
+pubsubd [debug] subscribe(): 'A' has subscribed to 'T3'
+2020/07/08 15:51:35 localhost:3000 172.17.0.1:51776 "GET /topics/T3/subscribe?name=A" 200 50 "curl/7.58.0" 9ms
+--> Publishing to topic T1
+test [debug] main(): publishing 1 -> T1
+test [debug] main(): publishing 2 -> T1
+test [debug] main(): publishing 3 -> T1
+test [debug] main(): waiting for all pubsubc calls to complete
+pubsubc [debug] cmd_publish(): '2020-07-08T18:51:35,208036464+03:00: #2' -> T1: {"error":{"status":"OK","code":200,"message":""}}
+pubsubc [debug] cmd_publish(): '2020-07-08T18:51:35,207683112+03:00: #1' -> T1: {"error":{"status":"OK","code":200,"message":""}}
+pubsubc [debug] cmd_publish(): '2020-07-08T18:51:35,207981215+03:00: #3' -> T1: {"error":{"status":"OK","code":200,"message":""}}
+pubsubd [debug] publish(): new message T1/1594223495:237439342
+pubsubd [debug] publish(): message T1/1594223495:237439342: 2020-07-08T18:51:35,208036464+03:00: #2
+pubsubd [debug] publish(): cast 1594223495:237439342 -> A/T1
+pubsubd [debug] publish(): cast 1594223495:237439342 -> B/T1
+pubsubd [debug] publish(): cast 1594223495:237439342 -> C/T1
+pubsubd [debug] publish(): clean up topic message T1/1594223495:237439342
+pubsubd [debug] publish(): new message T1/1594223495:243833650
+2020/07/08 15:51:35 localhost:3000 172.17.0.1:51780 "POST /topics/T1/publish" 200 50 "curl/7.58.0" 13ms
+pubsubd [debug] publish(): message T1/1594223495:243833650: 2020-07-08T18:51:35,207683112+03:00: #1
+pubsubd [debug] publish(): cast 1594223495:243833650 -> A/T1
+pubsubd [debug] publish(): cast 1594223495:243833650 -> B/T1
+pubsubd [debug] publish(): cast 1594223495:243833650 -> C/T1
+pubsubd [debug] publish(): clean up topic message T1/1594223495:243833650
+pubsubd [debug] publish(): new message T1/1594223495:250791653
+2020/07/08 15:51:35 localhost:3000 172.17.0.1:51784 "POST /topics/T1/publish" 200 50 "curl/7.58.0" 19ms
+pubsubd [debug] publish(): message T1/1594223495:250791653: 2020-07-08T18:51:35,207981215+03:00: #3
+pubsubd [debug] publish(): cast 1594223495:250791653 -> A/T1
+pubsubd [debug] publish(): cast 1594223495:250791653 -> B/T1
+pubsubd [debug] publish(): cast 1594223495:250791653 -> C/T1
+pubsubd [debug] publish(): clean up topic message T1/1594223495:250791653
+2020/07/08 15:51:35 localhost:3000 172.17.0.1:51788 "POST /topics/T1/publish" 200 50 "curl/7.58.0" 27ms
+test [debug] main(): dumping internal storage of pubsubd:
+/memstor
+|-- subscribers
+|   |-- A
+|   |   |-- T1
+|   |   |   |-- 1594223495:237439342
+|   |   |   |-- 1594223495:243833650
+|   |   |   `-- 1594223495:250791653
+|   |   |-- T2
+|   |   `-- T3
+|   |-- B
+|   |   |-- T1
+|   |   |   |-- 1594223495:237439342
+|   |   |   |-- 1594223495:243833650
+|   |   |   `-- 1594223495:250791653
+|   |   `-- T2
+|   |-- C
+|   |   `-- T1
+|   |       |-- 1594223495:237439342
+|   |       |-- 1594223495:243833650
+|   |       `-- 1594223495:250791653
+|   `-- lock
+`-- topics
+    |-- T1
+    |   `-- lock
+    |-- T2
+    `-- T3
+
+14 directories, 11 files
+--> Polling topic T1
+test [debug] main(): polling T1 => A
+test [debug] main(): polling T1 => B
+test [debug] main(): polling T1 => C
+test [debug] main(): waiting for all pubsubc calls to complete
+pubsubc [debug] cmd_poll(): T1 => C: 2020-07-08T18:51:35,208036464+03:00: #2
+pubsubc [debug] cmd_poll(): T1 => A: 2020-07-08T18:51:35,208036464+03:00: #2
+pubsubc [debug] cmd_poll(): T1 => B: 2020-07-08T18:51:35,208036464+03:00: #2
+pubsubd [debug] poll(): consuming message C/T1/1594223495:237439342
+pubsubd [debug] poll(): consuming message A/T1/1594223495:237439342
+pubsubd [debug] poll(): consuming message B/T1/1594223495:237439342
+2020/07/08 15:51:35 localhost:3000 172.17.0.1:51796 "GET /topics/T1/poll?name=C" 200 39 "curl/7.58.0" 9ms
+2020/07/08 15:51:35 localhost:3000 172.17.0.1:51798 "GET /topics/T1/poll?name=B" 200 39 "curl/7.58.0" 9ms
+2020/07/08 15:51:35 localhost:3000 172.17.0.1:51800 "GET /topics/T1/poll?name=A" 200 39 "curl/7.58.0" 9ms
+test [debug] main(): dumping internal storage of pubsubd:
+/memstor
+|-- subscribers
+|   |-- A
+|   |   |-- T1
+|   |   |   |-- 1594223495:243833650
+|   |   |   |-- 1594223495:250791653
+|   |   |   `-- lock
+|   |   |-- T2
+|   |   `-- T3
+|   |-- B
+|   |   |-- T1
+|   |   |   |-- 1594223495:243833650
+|   |   |   |-- 1594223495:250791653
+|   |   |   `-- lock
+|   |   `-- T2
+|   |-- C
+|   |   `-- T1
+|   |       |-- 1594223495:243833650
+|   |       |-- 1594223495:250791653
+|   |       `-- lock
+|   `-- lock
+`-- topics
+    |-- T1
+    |   `-- lock
+    |-- T2
+    `-- T3
+
+14 directories, 11 files
+test [debug] main(): polling T1 => A
+test [debug] main(): polling T1 => B
+test [debug] main(): polling T1 => C
+test [debug] main(): waiting for all pubsubc calls to complete
+pubsubc [debug] cmd_poll(): T1 => A: 2020-07-08T18:51:35,207683112+03:00: #1
+pubsubc [debug] cmd_poll(): T1 => C: 2020-07-08T18:51:35,207683112+03:00: #1
+pubsubc [debug] cmd_poll(): T1 => B: 2020-07-08T18:51:35,207683112+03:00: #1
+pubsubd [debug] poll(): consuming message C/T1/1594223495:243833650
+pubsubd [debug] poll(): consuming message B/T1/1594223495:243833650
+pubsubd [debug] poll(): consuming message A/T1/1594223495:243833650
+2020/07/08 15:51:36 localhost:3000 172.17.0.1:51816 "GET /topics/T1/poll?name=C" 200 39 "curl/7.58.0" 9ms
+2020/07/08 15:51:36 localhost:3000 172.17.0.1:51814 "GET /topics/T1/poll?name=A" 200 39 "curl/7.58.0" 9ms
+2020/07/08 15:51:36 localhost:3000 172.17.0.1:51812 "GET /topics/T1/poll?name=B" 200 39 "curl/7.58.0" 9ms
+test [debug] main(): dumping internal storage of pubsubd:
+/memstor
+|-- subscribers
+|   |-- A
+|   |   |-- T1
+|   |   |   |-- 1594223495:250791653
+|   |   |   `-- lock
+|   |   |-- T2
+|   |   `-- T3
+|   |-- B
+|   |   |-- T1
+|   |   |   |-- 1594223495:250791653
+|   |   |   `-- lock
+|   |   `-- T2
+|   |-- C
+|   |   `-- T1
+|   |       |-- 1594223495:250791653
+|   |       `-- lock
+|   `-- lock
+`-- topics
+    |-- T1
+    |   `-- lock
+    |-- T2
+    `-- T3
+
+14 directories, 8 files
+test [debug] main(): polling T1 => A
+test [debug] main(): polling T1 => B
+test [debug] main(): polling T1 => C
+test [debug] main(): waiting for all pubsubc calls to complete
+pubsubc [debug] cmd_poll(): T1 => B: 2020-07-08T18:51:35,207981215+03:00: #3
+pubsubc [debug] cmd_poll(): T1 => C: 2020-07-08T18:51:35,207981215+03:00: #3
+pubsubc [debug] cmd_poll(): T1 => A: 2020-07-08T18:51:35,207981215+03:00: #3
+pubsubd [debug] poll(): consuming message B/T1/1594223495:250791653
+pubsubd [debug] poll(): consuming message C/T1/1594223495:250791653
+2020/07/08 15:51:36 localhost:3000 172.17.0.1:51824 "GET /topics/T1/poll?name=B" 200 39 "curl/7.58.0" 8ms
+2020/07/08 15:51:36 localhost:3000 172.17.0.1:51826 "GET /topics/T1/poll?name=C" 200 39 "curl/7.58.0" 9ms
+pubsubd [debug] poll(): consuming message A/T1/1594223495:250791653
+2020/07/08 15:51:36 localhost:3000 172.17.0.1:51830 "GET /topics/T1/poll?name=A" 200 39 "curl/7.58.0" 8ms
+test [debug] main(): dumping internal storage of pubsubd:
+/memstor
+|-- subscribers
+|   |-- A
+|   |   |-- T1
+|   |   |   `-- lock
+|   |   |-- T2
+|   |   `-- T3
+|   |-- B
+|   |   |-- T1
+|   |   |   `-- lock
+|   |   `-- T2
+|   |-- C
+|   |   `-- T1
+|   |       `-- lock
+|   `-- lock
+`-- topics
+    |-- T1
+    |   `-- lock
+    |-- T2
+    `-- T3
+
+14 directories, 5 files
+--> Publishing to topic T2
+test [debug] main(): publishing 1 -> T2
+test [debug] main(): publishing 2 -> T2
+test [debug] main(): publishing 3 -> T2
+test [debug] main(): waiting for all pubsubc calls to complete
+pubsubc [debug] cmd_publish(): '2020-07-08T18:51:36,899991855+03:00: #1' -> T2: {"error":{"status":"OK","code":200,"message":""}}
+pubsubc [debug] cmd_publish(): '2020-07-08T18:51:36,901259171+03:00: #2' -> T2: {"error":{"status":"OK","code":200,"message":""}}
+pubsubc [debug] cmd_publish(): '2020-07-08T18:51:36,901093464+03:00: #3' -> T2: {"error":{"status":"OK","code":200,"message":""}}
+pubsubd [debug] publish(): new message T2/1594223496:928465683
+pubsubd [debug] publish(): message T2/1594223496:928465683: 2020-07-08T18:51:36,899991855+03:00: #1
+pubsubd [debug] publish(): cast 1594223496:928465683 -> A/T2
+pubsubd [debug] publish(): cast 1594223496:928465683 -> B/T2
+pubsubd [debug] publish(): clean up topic message T2/1594223496:928465683
+pubsubd [debug] publish(): new message T2/1594223496:934923191
+2020/07/08 15:51:36 localhost:3000 172.17.0.1:51834 "POST /topics/T2/publish" 200 50 "curl/7.58.0" 12ms
+pubsubd [debug] publish(): message T2/1594223496:934923191: 2020-07-08T18:51:36,901259171+03:00: #2
+pubsubd [debug] publish(): cast 1594223496:934923191 -> A/T2
+pubsubd [debug] publish(): cast 1594223496:934923191 -> B/T2
+pubsubd [debug] publish(): clean up topic message T2/1594223496:934923191
+pubsubd [debug] publish(): new message T2/1594223496:941075397
+2020/07/08 15:51:36 localhost:3000 172.17.0.1:51842 "POST /topics/T2/publish" 200 50 "curl/7.58.0" 15ms
+pubsubd [debug] publish(): message T2/1594223496:941075397: 2020-07-08T18:51:36,901093464+03:00: #3
+pubsubd [debug] publish(): cast 1594223496:941075397 -> A/T2
+pubsubd [debug] publish(): cast 1594223496:941075397 -> B/T2
+pubsubd [debug] publish(): clean up topic message T2/1594223496:941075397
+2020/07/08 15:51:36 localhost:3000 172.17.0.1:51838 "POST /topics/T2/publish" 200 50 "curl/7.58.0" 21ms
+test [debug] main(): dumping internal storage of pubsubd:
+/memstor
+|-- subscribers
+|   |-- A
+|   |   |-- T1
+|   |   |   `-- lock
+|   |   |-- T2
+|   |   |   |-- 1594223496:928465683
+|   |   |   |-- 1594223496:934923191
+|   |   |   `-- 1594223496:941075397
+|   |   `-- T3
+|   |-- B
+|   |   |-- T1
+|   |   |   `-- lock
+|   |   `-- T2
+|   |       |-- 1594223496:928465683
+|   |       |-- 1594223496:934923191
+|   |       `-- 1594223496:941075397
+|   |-- C
+|   |   `-- T1
+|   |       `-- lock
+|   `-- lock
+`-- topics
+    |-- T1
+    |   `-- lock
+    |-- T2
+    |   `-- lock
+    `-- T3
+
+14 directories, 12 files
+--> Polling topic T2
+test [debug] main(): polling T2 => A
+test [debug] main(): polling T2 => B
+test [debug] main(): waiting for all pubsubc calls to complete
+pubsubc [debug] cmd_poll(): T2 => A: 2020-07-08T18:51:36,899991855+03:00: #1
+pubsubc [debug] cmd_poll(): T2 => B: 2020-07-08T18:51:36,899991855+03:00: #1
+pubsubd [debug] poll(): consuming message A/T2/1594223496:928465683
+pubsubd [debug] poll(): consuming message B/T2/1594223496:928465683
+2020/07/08 15:51:37 localhost:3000 172.17.0.1:51850 "GET /topics/T2/poll?name=A" 200 39 "curl/7.58.0" 8ms
+2020/07/08 15:51:37 localhost:3000 172.17.0.1:51846 "GET /topics/T2/poll?name=B" 200 39 "curl/7.58.0" 9ms
+test [debug] main(): dumping internal storage of pubsubd:
+/memstor
+|-- subscribers
+|   |-- A
+|   |   |-- T1
+|   |   |   `-- lock
+|   |   |-- T2
+|   |   |   |-- 1594223496:934923191
+|   |   |   |-- 1594223496:941075397
+|   |   |   `-- lock
+|   |   `-- T3
+|   |-- B
+|   |   |-- T1
+|   |   |   `-- lock
+|   |   `-- T2
+|   |       |-- 1594223496:934923191
+|   |       |-- 1594223496:941075397
+|   |       `-- lock
+|   |-- C
+|   |   `-- T1
+|   |       `-- lock
+|   `-- lock
+`-- topics
+    |-- T1
+    |   `-- lock
+    |-- T2
+    |   `-- lock
+    `-- T3
+
+14 directories, 12 files
+test [debug] main(): polling T2 => A
+test [debug] main(): polling T2 => B
+test [debug] main(): waiting for all pubsubc calls to complete
+pubsubc [debug] cmd_poll(): T2 => B: 2020-07-08T18:51:36,901259171+03:00: #2
+pubsubc [debug] cmd_poll(): T2 => A: 2020-07-08T18:51:36,901259171+03:00: #2
+pubsubd [debug] poll(): consuming message B/T2/1594223496:934923191
+pubsubd [debug] poll(): consuming message A/T2/1594223496:934923191
+2020/07/08 15:51:37 localhost:3000 172.17.0.1:51854 "GET /topics/T2/poll?name=B" 200 39 "curl/7.58.0" 8ms
+2020/07/08 15:51:37 localhost:3000 172.17.0.1:51858 "GET /topics/T2/poll?name=A" 200 39 "curl/7.58.0" 7ms
+test [debug] main(): dumping internal storage of pubsubd:
+/memstor
+|-- subscribers
+|   |-- A
+|   |   |-- T1
+|   |   |   `-- lock
+|   |   |-- T2
+|   |   |   |-- 1594223496:941075397
+|   |   |   `-- lock
+|   |   `-- T3
+|   |-- B
+|   |   |-- T1
+|   |   |   `-- lock
+|   |   `-- T2
+|   |       |-- 1594223496:941075397
+|   |       `-- lock
+|   |-- C
+|   |   `-- T1
+|   |       `-- lock
+|   `-- lock
+`-- topics
+    |-- T1
+    |   `-- lock
+    |-- T2
+    |   `-- lock
+    `-- T3
+
+14 directories, 10 files
+test [debug] main(): polling T2 => A
+test [debug] main(): polling T2 => B
+test [debug] main(): waiting for all pubsubc calls to complete
+pubsubc [debug] cmd_poll(): T2 => B: 2020-07-08T18:51:36,901093464+03:00: #3
+pubsubc [debug] cmd_poll(): T2 => A: 2020-07-08T18:51:36,901093464+03:00: #3
+pubsubd [debug] poll(): consuming message B/T2/1594223496:941075397
+pubsubd [debug] poll(): consuming message A/T2/1594223496:941075397
+2020/07/08 15:51:38 localhost:3000 172.17.0.1:51862 "GET /topics/T2/poll?name=B" 200 39 "curl/7.58.0" 8ms
+2020/07/08 15:51:38 localhost:3000 172.17.0.1:51866 "GET /topics/T2/poll?name=A" 200 39 "curl/7.58.0" 8ms
+test [debug] main(): dumping internal storage of pubsubd:
+/memstor
+|-- subscribers
+|   |-- A
+|   |   |-- T1
+|   |   |   `-- lock
+|   |   |-- T2
+|   |   |   `-- lock
+|   |   `-- T3
+|   |-- B
+|   |   |-- T1
+|   |   |   `-- lock
+|   |   `-- T2
+|   |       `-- lock
+|   |-- C
+|   |   `-- T1
+|   |       `-- lock
+|   `-- lock
+`-- topics
+    |-- T1
+    |   `-- lock
+    |-- T2
+    |   `-- lock
+    `-- T3
+
+14 directories, 8 files
+--> Publishing to topic T3
+test [debug] main(): publishing 1 -> T3
+test [debug] main(): publishing 2 -> T3
+test [debug] main(): publishing 3 -> T3
+test [debug] main(): waiting for all pubsubc calls to complete
+pubsubc [debug] cmd_publish(): '2020-07-08T18:51:38,598197846+03:00: #2' -> T3: {"error":{"status":"OK","code":200,"message":""}}
+pubsubc [debug] cmd_publish(): '2020-07-08T18:51:38,598008167+03:00: #3' -> T3: {"error":{"status":"OK","code":200,"message":""}}
+pubsubc [debug] cmd_publish(): '2020-07-08T18:51:38,597455904+03:00: #1' -> T3: {"error":{"status":"OK","code":200,"message":""}}
+pubsubd [debug] publish(): new message T3/1594223498:624235635
+pubsubd [debug] publish(): message T3/1594223498:624235635: 2020-07-08T18:51:38,598197846+03:00: #2
+pubsubd [debug] publish(): cast 1594223498:624235635 -> A/T3
+pubsubd [debug] publish(): clean up topic message T3/1594223498:624235635
+pubsubd [debug] publish(): new message T3/1594223498:628919440
+pubsubd [debug] publish(): message T3/1594223498:628919440: 2020-07-08T18:51:38,598008167+03:00: #3
+2020/07/08 15:51:38 localhost:3000 172.17.0.1:51874 "POST /topics/T3/publish" 200 50 "curl/7.58.0" 11ms
+pubsubd [debug] publish(): cast 1594223498:628919440 -> A/T3
+pubsubd [debug] publish(): clean up topic message T3/1594223498:628919440
+pubsubd [debug] publish(): new message T3/1594223498:633890681
+2020/07/08 15:51:38 localhost:3000 172.17.0.1:51882 "POST /topics/T3/publish" 200 50 "curl/7.58.0" 13ms
+pubsubd [debug] publish(): message T3/1594223498:633890681: 2020-07-08T18:51:38,597455904+03:00: #1
+pubsubd [debug] publish(): cast 1594223498:633890681 -> A/T3
+pubsubd [debug] publish(): clean up topic message T3/1594223498:633890681
+2020/07/08 15:51:38 localhost:3000 172.17.0.1:51878 "POST /topics/T3/publish" 200 50 "curl/7.58.0" 19ms
+test [debug] main(): dumping internal storage of pubsubd:
+/memstor
+|-- subscribers
+|   |-- A
+|   |   |-- T1
+|   |   |   `-- lock
+|   |   |-- T2
+|   |   |   `-- lock
+|   |   `-- T3
+|   |       |-- 1594223498:624235635
+|   |       |-- 1594223498:628919440
+|   |       `-- 1594223498:633890681
+|   |-- B
+|   |   |-- T1
+|   |   |   `-- lock
+|   |   `-- T2
+|   |       `-- lock
+|   |-- C
+|   |   `-- T1
+|   |       `-- lock
+|   `-- lock
+`-- topics
+    |-- T1
+    |   `-- lock
+    |-- T2
+    |   `-- lock
+    `-- T3
+        `-- lock
+
+14 directories, 12 files
+--> Polling topic T3
+test [debug] main(): polling T3 => A
+pubsubc [debug] cmd_poll(): T3 => A: 2020-07-08T18:51:38,598197846+03:00: #2
+pubsubd [debug] poll(): consuming message A/T3/1594223498:624235635
+2020/07/08 15:51:39 localhost:3000 172.17.0.1:51886 "GET /topics/T3/poll?name=A" 200 39 "curl/7.58.0" 9ms
+test [debug] main(): dumping internal storage of pubsubd:
+/memstor
+|-- subscribers
+|   |-- A
+|   |   |-- T1
+|   |   |   `-- lock
+|   |   |-- T2
+|   |   |   `-- lock
+|   |   `-- T3
+|   |       |-- 1594223498:628919440
+|   |       |-- 1594223498:633890681
+|   |       `-- lock
+|   |-- B
+|   |   |-- T1
+|   |   |   `-- lock
+|   |   `-- T2
+|   |       `-- lock
+|   |-- C
+|   |   `-- T1
+|   |       `-- lock
+|   `-- lock
+`-- topics
+    |-- T1
+    |   `-- lock
+    |-- T2
+    |   `-- lock
+    `-- T3
+        `-- lock
+
+14 directories, 12 files
+test [debug] main(): polling T3 => A
+pubsubc [debug] cmd_poll(): T3 => A: 2020-07-08T18:51:38,598008167+03:00: #3
+pubsubd [debug] poll(): consuming message A/T3/1594223498:628919440
+2020/07/08 15:51:39 localhost:3000 172.17.0.1:51890 "GET /topics/T3/poll?name=A" 200 39 "curl/7.58.0" 10ms
+test [debug] main(): dumping internal storage of pubsubd:
+/memstor
+|-- subscribers
+|   |-- A
+|   |   |-- T1
+|   |   |   `-- lock
+|   |   |-- T2
+|   |   |   `-- lock
+|   |   `-- T3
+|   |       |-- 1594223498:633890681
+|   |       `-- lock
+|   |-- B
+|   |   |-- T1
+|   |   |   `-- lock
+|   |   `-- T2
+|   |       `-- lock
+|   |-- C
+|   |   `-- T1
+|   |       `-- lock
+|   `-- lock
+`-- topics
+    |-- T1
+    |   `-- lock
+    |-- T2
+    |   `-- lock
+    `-- T3
+        `-- lock
+
+14 directories, 11 files
+test [debug] main(): polling T3 => A
+pubsubc [debug] cmd_poll(): T3 => A: 2020-07-08T18:51:38,597455904+03:00: #1
+pubsubd [debug] poll(): consuming message A/T3/1594223498:633890681
+2020/07/08 15:51:39 localhost:3000 172.17.0.1:51894 "GET /topics/T3/poll?name=A" 200 39 "curl/7.58.0" 11ms
+test [debug] main(): dumping internal storage of pubsubd:
+/memstor
+|-- subscribers
+|   |-- A
+|   |   |-- T1
+|   |   |   `-- lock
+|   |   |-- T2
+|   |   |   `-- lock
+|   |   `-- T3
+|   |       `-- lock
+|   |-- B
+|   |   |-- T1
+|   |   |   `-- lock
+|   |   `-- T2
+|   |       `-- lock
+|   |-- C
+|   |   `-- T1
+|   |       `-- lock
+|   `-- lock
+`-- topics
+    |-- T1
+    |   `-- lock
+    |-- T2
+    |   `-- lock
+    `-- T3
+        `-- lock
+
+14 directories, 10 files
+--> Publishing to topic T1
+test [debug] main(): publishing 1 -> T1
+test [debug] main(): publishing 2 -> T1
+test [debug] main(): publishing 3 -> T1
+test [debug] main(): waiting for all pubsubc calls to complete
+pubsubc [debug] cmd_publish(): '2020-07-08T18:51:40,256458019+03:00: #1' -> T1: {"error":{"status":"OK","code":200,"message":""}}
+pubsubc [debug] cmd_publish(): '2020-07-08T18:51:40,257591391+03:00: #3' -> T1: {"error":{"status":"OK","code":200,"message":""}}
+pubsubc [debug] cmd_publish(): '2020-07-08T18:51:40,257578941+03:00: #2' -> T1: {"error":{"status":"OK","code":200,"message":""}}
+pubsubd [debug] publish(): new message T1/1594223500:284037351
+pubsubd [debug] publish(): message T1/1594223500:284037351: 2020-07-08T18:51:40,256458019+03:00: #1
+pubsubd [debug] publish(): cast 1594223500:284037351 -> A/T1
+pubsubd [debug] publish(): cast 1594223500:284037351 -> B/T1
+pubsubd [debug] publish(): cast 1594223500:284037351 -> C/T1
+pubsubd [debug] publish(): clean up topic message T1/1594223500:284037351
+pubsubd [debug] publish(): new message T1/1594223500:290615187
+2020/07/08 15:51:40 localhost:3000 172.17.0.1:51898 "POST /topics/T1/publish" 200 50 "curl/7.58.0" 13ms
+pubsubd [debug] publish(): message T1/1594223500:290615187: 2020-07-08T18:51:40,257591391+03:00: #3
+pubsubd [debug] publish(): cast 1594223500:290615187 -> A/T1
+pubsubd [debug] publish(): cast 1594223500:290615187 -> B/T1
+pubsubd [debug] publish(): cast 1594223500:290615187 -> C/T1
+pubsubd [debug] publish(): clean up topic message T1/1594223500:290615187
+pubsubd [debug] publish(): new message T1/1594223500:298065861
+2020/07/08 15:51:40 localhost:3000 172.17.0.1:51902 "POST /topics/T1/publish" 200 50 "curl/7.58.0" 20ms
+pubsubd [debug] publish(): message T1/1594223500:298065861: 2020-07-08T18:51:40,257578941+03:00: #2
+pubsubd [debug] publish(): cast 1594223500:298065861 -> A/T1
+pubsubd [debug] publish(): cast 1594223500:298065861 -> B/T1
+pubsubd [debug] publish(): cast 1594223500:298065861 -> C/T1
+pubsubd [debug] publish(): clean up topic message T1/1594223500:298065861
+2020/07/08 15:51:40 localhost:3000 172.17.0.1:51906 "POST /topics/T1/publish" 200 50 "curl/7.58.0" 28ms
+test [debug] main(): dumping internal storage of pubsubd:
+/memstor
+|-- subscribers
+|   |-- A
+|   |   |-- T1
+|   |   |   |-- 1594223500:284037351
+|   |   |   |-- 1594223500:290615187
+|   |   |   |-- 1594223500:298065861
+|   |   |   `-- lock
+|   |   |-- T2
+|   |   |   `-- lock
+|   |   `-- T3
+|   |       `-- lock
+|   |-- B
+|   |   |-- T1
+|   |   |   |-- 1594223500:284037351
+|   |   |   |-- 1594223500:290615187
+|   |   |   |-- 1594223500:298065861
+|   |   |   `-- lock
+|   |   `-- T2
+|   |       `-- lock
+|   |-- C
+|   |   `-- T1
+|   |       |-- 1594223500:284037351
+|   |       |-- 1594223500:290615187
+|   |       |-- 1594223500:298065861
+|   |       `-- lock
+|   `-- lock
+`-- topics
+    |-- T1
+    |   `-- lock
+    |-- T2
+    |   `-- lock
+    `-- T3
+        `-- lock
+
+14 directories, 19 files
+--> Unsubscribing from topic T1
+test [debug] main(): unsubscribing A ↛ T1
+test [debug] main(): unsubscribing B ↛ T1
+test [debug] main(): unsubscribing C ↛ T1
+test [debug] main(): waiting for all pubsubc calls to complete
+pubsubc [debug] cmd_unsubscribe(): B ↛ T1: {"error":{"status":"OK","code":200,"message":""}}
+pubsubc [debug] cmd_unsubscribe(): C ↛ T1: {"error":{"status":"OK","code":200,"message":""}}
+pubsubc [debug] cmd_unsubscribe(): A ↛ T1: {"error":{"status":"OK","code":200,"message":""}}
+pubsubd [debug] unsubscribe(): removing subscription 'B/T1'
+pubsubd [debug] unsubscribe(): 'B' has unsubscribed from 'T1'
+pubsubd [debug] unsubscribe(): removing subscription 'C/T1'
+2020/07/08 15:51:40 localhost:3000 172.17.0.1:51918 "GET /topics/T1/unsubscribe?name=B" 200 50 "curl/7.58.0" 7ms
+pubsubd [debug] unsubscribe(): 'C' has unsubscribed from 'T1'
+pubsubd [debug] unsubscribe(): removing subscription 'A/T1'
+2020/07/08 15:51:40 localhost:3000 172.17.0.1:51912 "GET /topics/T1/unsubscribe?name=C" 200 50 "curl/7.58.0" 8ms
+pubsubd [debug] unsubscribe(): 'A' has unsubscribed from 'T1'
+2020/07/08 15:51:40 localhost:3000 172.17.0.1:51914 "GET /topics/T1/unsubscribe?name=A" 200 50 "curl/7.58.0" 10ms
+test [debug] main(): dumping internal storage of pubsubd:
+/memstor
+|-- subscribers
+|   |-- A
+|   |   |-- T2
+|   |   |   `-- lock
+|   |   `-- T3
+|   |       `-- lock
+|   |-- B
+|   |   `-- T2
+|   |       `-- lock
+|   |-- C
+|   `-- lock
+`-- topics
+    |-- T1
+    |   `-- lock
+    |-- T2
+    |   `-- lock
+    `-- T3
+        `-- lock
+
+11 directories, 7 files
+--> Unsubscribing from topic T2
+test [debug] main(): unsubscribing A ↛ T2
+test [debug] main(): unsubscribing B ↛ T2
+test [debug] main(): waiting for all pubsubc calls to complete
+pubsubc [debug] cmd_unsubscribe(): B ↛ T2: {"error":{"status":"OK","code":200,"message":""}}
+pubsubc [debug] cmd_unsubscribe(): A ↛ T2: {"error":{"status":"OK","code":200,"message":""}}
+pubsubd [debug] unsubscribe(): removing subscription 'B/T2'
+pubsubd [debug] unsubscribe(): 'B' has unsubscribed from 'T2'
+pubsubd [debug] unsubscribe(): removing subscription 'A/T2'
+2020/07/08 15:51:41 localhost:3000 172.17.0.1:51922 "GET /topics/T2/unsubscribe?name=B" 200 50 "curl/7.58.0" 7ms
+pubsubd [debug] unsubscribe(): 'A' has unsubscribed from 'T2'
+2020/07/08 15:51:41 localhost:3000 172.17.0.1:51926 "GET /topics/T2/unsubscribe?name=A" 200 50 "curl/7.58.0" 9ms
+test [debug] main(): dumping internal storage of pubsubd:
+/memstor
+|-- subscribers
+|   |-- A
+|   |   `-- T3
+|   |       `-- lock
+|   |-- B
+|   |-- C
+|   `-- lock
+`-- topics
+    |-- T1
+    |   `-- lock
+    |-- T2
+    |   `-- lock
+    `-- T3
+        `-- lock
+
+9 directories, 5 files
+--> Unsubscribing from topic T3
+test [debug] main(): unsubscribing A ↛ T3
+test [debug] main(): waiting for all pubsubc calls to complete
+pubsubc [debug] cmd_unsubscribe(): A ↛ T3: {"error":{"status":"OK","code":200,"message":""}}
+pubsubd [debug] unsubscribe(): removing subscription 'A/T3'
+pubsubd [debug] unsubscribe(): 'A' has unsubscribed from 'T3'
+2020/07/08 15:51:41 localhost:3000 172.17.0.1:51930 "GET /topics/T3/unsubscribe?name=A" 200 50 "curl/7.58.0" 6ms
+test [debug] main(): dumping internal storage of pubsubd:
+/memstor
+|-- subscribers
+|   |-- A
+|   |-- B
+|   |-- C
+|   `-- lock
+`-- topics
+    |-- T1
+    |   `-- lock
+    |-- T2
+    |   `-- lock
+    `-- T3
+        `-- lock
+
+8 directories, 4 files
+--> Stopping pubsubd container
+test [debug] main(): removing pubsubd container
+
