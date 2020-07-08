@@ -1,0 +1,164 @@
+#!/bin/bash
+set -eo pipefail
+
+### pubsub client
+
+# constants
+readonly SELF="$(readlink -f $0)"
+readonly BASE_DIR="${SELF%/*}"
+readonly PROG_NAME="${0##*/}"
+
+# variables
+verbose=false
+pubsubd_host=localhost
+pubsubd_port=3000
+curl_opts=(-s)  # silence download progress
+cmd=help
+
+source $BASE_DIR/pubsub-lib.sh
+
+usage() {
+    cat <<USAGE_END
+Usage: $PROG_NAME [options] <command> <args..>
+
+  Command-line client to communicate with pubsubd service.
+
+  Commands:
+
+    publish <topic>
+    publish <topic> <message>
+
+                 Send a message to the topic. A message is taken from the STDIN
+                 or from the command line argument if its provided.
+
+    subscribe <topic> <subscriber>
+
+                 Subscribe to a topic. If it doesn't exist, it's created.
+
+    unsubscribe <topic> <subscriber>
+
+                 Unsubscribe from a topic.
+
+    poll <topic> <subscriber>
+
+                 Fetch unread message or wait for a new one if there no unread
+                 messages.
+
+    help         Show this help screen.
+
+  Options:
+
+    -v|--verbose        Print what's going on.
+
+    -h|--help           Print this help screen.
+USAGE_END
+}
+
+# commands
+
+cmd_get() {
+    local uri=$1
+
+    [[ -n $uri ]] ||
+        die "'get' command requires an argument: uri"
+
+    curl ${curl_opts[@]} $pubsubd_host:$pubsubd_port/$uri \
+    | { read || true; debug "/$uri: $REPLY"; $verbose || echo "$REPLY"; }
+}
+
+cmd_publish() {
+    local topic=$1
+    local msg=$2
+
+    [[ -n $topic ]] ||
+        die "'publish' command requires an argument: topic name"
+
+    [[ -n $msg ]] || {
+        debug "reading 'msg' from STDIN"
+        msg='@-'
+    }
+
+    curl ${curl_opts[@]} \
+         --data "$msg" \
+         $pubsubd_host:$pubsubd_port/topics/${topic}/publish \
+    | { read || true; debug "'$msg' -> $topic: $REPLY"; $verbose || echo "$REPLY"; }
+}
+
+cmd_subscribe() {
+    local topic=$1
+    local subname=$2
+
+    [[ -n $topic ]] ||
+        die "'subscribe' command requires an argument: topic name"
+
+    [[ -n $subname ]] ||
+        die "'subscribe' command requires an argument: subscriber name"
+
+    curl ${curl_opts[@]} \
+         $pubsubd_host:$pubsubd_port/topics/${topic}/subscribe?name=$subname \
+    | { read || true; debug "$subname -> $topic: $REPLY"; $verbose || echo "$REPLY"; }
+}
+
+cmd_unsubscribe() {
+    local topic=$1
+    local subname=$2
+
+    [[ -n $topic ]] ||
+        die "'unsubscribe' command requires an argument: topic name"
+
+    [[ -n $subname ]] ||
+        die "'unsubscribe' command requires an argument: subscriber name"
+
+    curl ${curl_opts[@]} \
+         $pubsubd_host:$pubsubd_port/topics/${topic}/unsubscribe?name=$subname \
+    | { read || true; debug "$subname ↛ $topic: $REPLY"; $verbose || echo "$REPLY"; }
+}
+
+cmd_poll() {
+    local topic=$1
+    local subname=$2
+
+    [[ -n $topic ]] ||
+        die "'poll' command requires an argument: topic name"
+
+    [[ -n $subname ]] ||
+        die "'poll' command requires an argument: subscriber name"
+
+    curl ${curl_opts[@]} \
+         $pubsubd_host:$pubsubd_port/topics/${topic}/poll?name=$subname \
+    | { read || true; debug "$topic => $subname: $REPLY"; $verbose || echo "$REPLY"; }
+}
+
+# parse CLI options
+while [[ -n $1 ]] ; do
+    case $1 in
+        -v|--verbose)    verbose=true ;;
+        -h|--help|help)  _help stdout ;;
+        -H|--host)       pubsubd_host=$2 ; shift ;;
+        -P|--port)       pubsubd_port=$2 ; shift ;;
+
+        -*) die "Unknown option '$1', see \`$PROG_NAME --help\`." ;;
+        *)  cmd=$1 ; shift ; break ;;
+    esac
+
+    shift
+done
+
+#if $verbose ; then
+#    curl_opts+=(-i)  # dump headers
+#fi
+
+# process commands
+case $cmd in
+    help) _help stdout ;;
+
+    pub|publish)        cmd_publish "$@" ;;
+    sub|subscribe)      cmd_subscribe "$@" ;;
+    unsub|unsubscribe)  cmd_unsubscribe "$@" ;;
+    poll)               cmd_poll "$@" ;;
+
+    # undocumented, debug only
+    get) cmd_get "$@" ;;
+
+    *) die "Unknown command: '$cmd', see \`$PROG_NAME help\`." ;;
+esac

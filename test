@@ -1,0 +1,225 @@
+#!/bin/bash
+set -eo pipefail
+
+### pubsub test
+
+# constants
+readonly SELF="$(readlink -f $0)"
+readonly BASE_DIR="${SELF%/*}"
+readonly PROG_NAME="${0##*/}"
+readonly DOCKER_LOGS_COUNTER=/tmp/pubsubd-test-container-logs-read-lines
+
+# variables
+verbose=false
+
+source $BASE_DIR/pubsub-lib.sh
+
+usage() {
+    echo "Usage: $PROG_NAME [--verbose|--help]"
+}
+
+# parse CLI options
+while [[ -n $1 ]] ; do
+    case $1 in
+        -v|--verbose)    verbose=true ;;
+        -h|--help|help)  _help stdout ;;
+
+        -*) die "Unknown option '$1', see \`$PROG_NAME --help\`." ;;
+        *)  break ;;
+    esac
+    shift
+done
+
+
+info 'Building pubsubd docker image'
+# ------------------------------------------------------------
+make build
+
+
+info 'Starting pubsubd container in background'
+# ------------------------------------------------------------
+docker run --detach \
+           --tmpfs /memstor \
+           --workdir /memstor \
+           --name pubsubd-test \
+           -p 3000:3000 \
+       local/pubsubd 'pubsubd --verbose'
+trap 'docker rm --force pubsubd-test' INT ERR
+debug 'initialize docker logs counter for pubsubd-test container'
+trap "rm -f \"$DOCKER_LOGS_COUNTER\"" EXIT ERR
+echo 0 > "$DOCKER_LOGS_COUNTER"
+show_unread_docker_logs pubsubd-test
+
+
+info 'Subscribing to topic T1'
+# ------------------------------------------------------------
+for client in {A..C} ; do
+    debug "subscribing $client -> T1"
+    ./pubsubc --verbose subscribe T1 $client &
+done
+debug 'waiting for all pubsubc calls to complete'
+wait
+show_unread_docker_logs pubsubd-test
+
+
+info 'Subscribing to topic T2'
+# ------------------------------------------------------------
+for client in {A..B} ; do
+    debug "subscribing $client -> T2"
+    ./pubsubc --verbose subscribe T2 $client &
+done
+debug 'waiting for all pubsubc calls to complete'
+wait
+show_unread_docker_logs pubsubd-test
+
+
+info 'Subscribing to topic T3'
+# ------------------------------------------------------------
+for client in {A..A} ; do
+    debug "subscribing $client -> T3"
+    ./pubsubc --verbose subscribe T3 $client &
+done
+debug 'waiting for all pubsubc calls to complete'
+wait
+show_unread_docker_logs pubsubd-test
+
+
+info 'Publishing to topic T1'
+# ------------------------------------------------------------
+for i in {1..3} ; do
+    debug "publishing $i -> T1"
+    ./pubsubc --verbose publish T1 "$(date -Ins): #$i" &
+done
+debug 'waiting for all pubsubc calls to complete'
+wait
+show_unread_docker_logs pubsubd-test
+debug 'dumping internal storage of pubsubd:'
+docker exec pubsubd-test tree /memstor
+
+
+info 'Polling topic T1'
+# ------------------------------------------------------------
+for i in {1..3} ; do
+    debug "polling T1 => A"
+    ./pubsubc --verbose poll T1 A &
+    debug "polling T1 => B"
+    ./pubsubc --verbose poll T1 B &
+    debug "polling T1 => C"
+    ./pubsubc --verbose poll T1 C &
+    debug 'waiting for all pubsubc calls to complete'
+    wait
+    show_unread_docker_logs pubsubd-test
+    debug 'dumping internal storage of pubsubd:'
+    docker exec pubsubd-test tree /memstor
+done
+
+
+info 'Publishing to topic T2'
+# ------------------------------------------------------------
+for i in {1..3} ; do
+    debug "publishing $i -> T2"
+    ./pubsubc --verbose publish T2 "$(date -Ins): #$i" &
+done
+debug 'waiting for all pubsubc calls to complete'
+wait
+show_unread_docker_logs pubsubd-test
+debug 'dumping internal storage of pubsubd:'
+docker exec pubsubd-test tree /memstor
+
+
+info 'Polling topic T2'
+# ------------------------------------------------------------
+for i in {1..3} ; do
+    debug "polling T2 => A"
+    ./pubsubc --verbose poll T2 A &
+    debug "polling T2 => B"
+    ./pubsubc --verbose poll T2 B &
+    debug 'waiting for all pubsubc calls to complete'
+    wait
+    show_unread_docker_logs pubsubd-test
+    debug 'dumping internal storage of pubsubd:'
+    docker exec pubsubd-test tree /memstor
+done
+
+
+info 'Publishing to topic T3'
+# ------------------------------------------------------------
+for i in {1..3} ; do
+    debug "publishing $i -> T3"
+    ./pubsubc --verbose publish T3 "$(date -Ins): #$i" &
+done
+debug 'waiting for all pubsubc calls to complete'
+wait
+show_unread_docker_logs pubsubd-test
+debug 'dumping internal storage of pubsubd:'
+docker exec pubsubd-test tree /memstor
+
+
+info 'Polling topic T3'
+# ------------------------------------------------------------
+for i in {1..3} ; do
+    debug "polling T3 => A"
+    ./pubsubc --verbose poll T3 A
+    show_unread_docker_logs pubsubd-test
+    debug 'dumping internal storage of pubsubd:'
+    docker exec pubsubd-test tree /memstor
+done
+
+
+info 'Publishing to topic T1'
+# ------------------------------------------------------------
+for i in {1..3} ; do
+    debug "publishing $i -> T1"
+    ./pubsubc --verbose publish T1 "$(date -Ins): #$i" &
+done
+debug 'waiting for all pubsubc calls to complete'
+wait
+show_unread_docker_logs pubsubd-test
+debug 'dumping internal storage of pubsubd:'
+docker exec pubsubd-test tree /memstor
+
+
+info 'Unsubscribing from topic T1'
+# ------------------------------------------------------------
+for client in {A..C} ; do
+    debug "unsubscribing $client ↛ T1"
+    ./pubsubc --verbose unsubscribe T1 $client &
+done
+debug 'waiting for all pubsubc calls to complete'
+wait
+show_unread_docker_logs pubsubd-test
+debug 'dumping internal storage of pubsubd:'
+docker exec pubsubd-test tree /memstor
+
+info 'Unsubscribing from topic T2'
+# ------------------------------------------------------------
+for client in {A..B} ; do
+    debug "unsubscribing $client ↛ T2"
+    ./pubsubc --verbose unsubscribe T2 $client &
+done
+debug 'waiting for all pubsubc calls to complete'
+wait
+show_unread_docker_logs pubsubd-test
+debug 'dumping internal storage of pubsubd:'
+docker exec pubsubd-test tree /memstor
+
+
+info 'Unsubscribing from topic T3'
+# ------------------------------------------------------------
+for client in {A..A} ; do
+    debug "unsubscribing $client ↛ T3"
+    ./pubsubc --verbose unsubscribe T3 $client &
+done
+debug 'waiting for all pubsubc calls to complete'
+wait
+show_unread_docker_logs pubsubd-test
+debug 'dumping internal storage of pubsubd:'
+docker exec pubsubd-test tree /memstor
+
+
+info 'Stopping pubsubd container'
+# ------------------------------------------------------------
+docker stop pubsubd-test >/dev/null
+show_unread_docker_logs pubsubd-test
+debug 'removing pubsubd container'
+docker rm pubsubd-test >/dev/null

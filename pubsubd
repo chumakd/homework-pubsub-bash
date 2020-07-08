@@ -1,0 +1,250 @@
+#!/bin/bash
+set -eo pipefail
+
+### pubsub daemon (invoked by `shell2http` in CGI mode)
+
+# constants
+readonly SELF="$(readlink -f $0)"
+readonly BASE_DIR="${SELF%/*}"
+readonly PROG_NAME="${0##*/}"
+
+# variables
+verbose=false
+
+source $BASE_DIR/pubsub-lib.sh
+
+usage() {
+    cat <<USAGE_END
+Usage: $PROG_NAME [options]
+
+  Publish-subscribe service.
+
+  Options:
+
+    -v|--verbose        Print what's going on.
+
+    -h|--help           Print this help screen.
+USAGE_END
+}
+
+# utils
+
+exit_with_http_status() {
+    local status=${1?status arg is mandatory in exit_with_http_status() func}
+    local code=${2?code arg is mandatory in exit_with_http_status() func}
+    local msg=$3
+
+    echo "Status: $code"
+    echo 'Content-Type: application/json'
+    echo
+    cat <<END_STATUS
+{"error":{"status":"$status","code":$code,"message":"$msg"}}
+END_STATUS
+
+    exit 0
+}
+
+http_reply_from_file() {
+    local file=${1?file arg is mandatory in http_reply_from_file() func}
+
+    echo 'Status: 200'
+    echo 'Content-Type: application/json'
+    echo
+    cat "$file"
+}
+
+# route handlers
+
+publish() {
+    local topic=${1%/$FUNCNAME}  # strip method name
+
+    [[ -d topics ]] || mkdir -p topics
+
+    [[ -d topics/$topic ]] || {
+        debug "topic '$topic': no such directory"
+        exit_with_http_status NOTFOUND 404 "Topic '$topic' doesn't exist"
+    }
+
+    # critical section
+    { flock 9000  # 9000 is just a random big file descriptor number, see `man 1 flock`
+
+        # message content provided on STDIN by `shell2http` CGI server;
+        # each message is stored in a separate file, which uses a unique,
+        # monotonically increasing number as its name, in a format:
+        #   <seconds since epoch>:<current time nanoseconds>
+        local msg_file=$(date +%s:%N)
+
+        debug "new message $topic/$msg_file"
+        cat > "topics/$topic/$msg_file" ||
+            exit_with_http_status NOSPACE 507 'Insufficient Storage'
+        debug "message $topic/$msg_file: $(cat topics/$topic/$msg_file)"
+
+        # broadcast message to the subscribers
+        local s cast_ok=true
+        for s in $(ls -1d subscribers/*/$topic 2>/dev/null) ; do
+            debug "cast $msg_file -> ${s#subscribers/}"
+            ln "topics/$topic/$msg_file" "$s" || {
+                debug "failed to hardlink topics/$topic/$msg_file -> $s"
+                cast_ok=false
+            }
+        done
+
+    } 9000>topics/$topic/lock
+
+    # message can be deleted from the topic at this point, because all
+    # subscribers have received their "pointer" to the message (a hardlink);
+    # when the last subscriber unsubscribes, the storage used by the message
+    # will be freed because no hardlinks to the message file have remained by
+    # that time
+    debug "clean up topic message $topic/$msg_file"
+    rm "topics/$topic/$msg_file"
+
+    $cast_ok ||
+        exit_with_http_status INTERNALERROR 500 'Failed to cast msg to subscribers'
+
+    exit_with_http_status OK 200
+}
+
+subscribe() {
+    local topic=${1%/$FUNCNAME}  # strip method name
+    local subname=$2
+
+    [[ -n $subname ]] || {
+        debug "missing query parameter 'name'"
+        exit_with_http_status BADREQUEST 400 "missing 'name' parameter"
+    }
+
+    [[ ! $subname =~ / ]] || {
+        debug "'/' is not allowed in 'name' query parameter: '$subname'"
+        exit_with_http_status INVALPARAM 422 "invalid 'name' parameter value"
+    }
+
+    [[ -d subscribers ]] || mkdir -p subscribers
+
+    [[ -d topics/$topic ]] || {
+        debug "creating new topic '$topic'"
+        mkdir -p "topics/$topic"
+    }
+
+    # critical section
+    { flock 9000  # 9000 is just a random big file descriptor number, see `man 1 flock`
+
+        [[ -d subscribers/$subname/$topic ]] || {
+            debug "'$subname' has subscribed to '$topic'"
+            mkdir -p "subscribers/$subname/$topic"
+        }
+
+    } 9000>subscribers/lock
+
+    exit_with_http_status OK 200
+}
+
+unsubscribe() {
+    local topic=${1%/$FUNCNAME}  # strip method name
+    local subname=$2
+
+    [[ -n $subname ]] || {
+        debug "missing query parameter 'name'"
+        exit_with_http_status BADREQUEST 400 "missing 'name' parameter"
+    }
+
+    [[ -d subscribers ]] || mkdir -p subscribers
+
+    # critical section
+    { flock 9000  # 9000 is just a random big file descriptor number, see `man 1 flock`
+
+        [[ -d subscribers/$subname/$topic ]] || {
+            debug "no such directory: 'subscribers/$subname/$topic'"
+            exit_with_http_status NOTFOUND 404 "'$subname' not subscribed to '$topic'"
+        }
+
+        debug "removing subscription '$subname/$topic'"
+        flock "subscribers/$subname/$topic/lock" \
+            rm -rf "subscribers/$subname/$topic"
+        debug "'$subname' has unsubscribed from '$topic'"
+
+    } 9000>subscribers/lock
+
+    exit_with_http_status OK 200
+}
+
+poll() {
+    local topic=${1%/$FUNCNAME}  # strip method name
+    local subname=$2
+
+    [[ -n $subname ]] || {
+        debug "missing query parameter 'name'"
+        exit_with_http_status BADREQUEST 400 "missing 'name' parameter"
+    }
+
+    # critical section
+    { flock 9000  # 9000 is just a random big file descriptor number, see `man 1 flock`
+
+    [[ -d subscribers/$subname/$topic ]] || {
+        debug "no such directory: 'subscribers/$subname/$topic'"
+        exit_with_http_status NOTFOUND 404 "'$subname' not subscribed to '$topic'"
+    }
+
+    while true ; do
+        local next=$(ls -1 subscribers/$subname/$topic/ 2>/dev/null | grep -v lock | head -n1)
+
+        [[ -n $next ]] || {
+            debug "waiting for new messages in $subname/$topic"
+
+            # unlock (close file descriptor)
+            exec 9000>&-
+
+            inotifywait -qq --recursive --event create "subscribers/$subname/$topic/" || {
+                debug "stop waiting, subscription '$subname/$topic' terminated"
+                exit_with_http_status NOTFOUND 404 "'$subname' unsubscribed from '$topic'"
+            }
+
+            # lock again
+            flock 9000 9000>"subscribers/$subname/$topic/lock" || {
+                debug "stop waiting, subscription '$subname/$topic' terminated"
+                exit_with_http_status NOTFOUND 404 "'$subname' unsubscribed from '$topic'"
+            }
+            continue
+        }
+
+        debug "consuming message $subname/$topic/$next"
+        http_reply_from_file "subscribers/$subname/$topic/$next"
+        rm "subscribers/$subname/$topic/$next"
+        break
+    done
+
+    # end critical section
+    } 9000>"subscribers/$subname/$topic/lock" || {
+        debug "no such directory: 'subscribers/$subname/$topic'"
+        exit_with_http_status NOTFOUND 404 "'$subname' not subscribed to '$topic'"
+    }
+
+}
+
+# parse CLI options
+while [[ -n $1 ]] ; do
+    case $1 in
+        -v|--verbose)    verbose=true ;;
+        -h|--help|help)  _help stdout ;;
+
+        -*) die "Unknown option '$1', see \`$PROG_NAME --help\`." ;;
+        *)  break ;;
+    esac
+
+    shift
+done
+
+# $PATH_INFO and $QUERY_STRING are provided in the environment
+# by `shell2http` CGI server
+
+# process routes
+case $PATH_INFO in
+    /topics/*/publish)      publish     ${PATH_INFO#/topics/} ;;
+    /topics/*/subscribe)    subscribe   ${PATH_INFO#/topics/} ${QUERY_STRING#name=} ;;
+    /topics/*/unsubscribe)  unsubscribe ${PATH_INFO#/topics/} ${QUERY_STRING#name=} ;;
+    /topics/*/poll)         poll        ${PATH_INFO#/topics/} ${QUERY_STRING#name=} ;;
+
+    '') die 'This is a CGI script which should not be invoked directly,' \
+            'it expects a correct environment to be set' ;;
+    *)  die "Unhandled route: '$PATH_INFO'." ;;
+esac
