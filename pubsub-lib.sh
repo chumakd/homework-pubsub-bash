@@ -48,3 +48,8 @@ show_unread_docker_logs() {
     local start_line=$(( 1 + $(cat $DOCKER_LOGS_COUNTER) ))
     docker logs $container |& tee >(wc -l > "$DOCKER_LOGS_COUNTER") | tail -n+$start_line
 }
+
+show_trap_handler_for() {
+    local signal=${1?show_trap_handler_for() requires a 'signal' argument}
+    trap -p $signal | sed -e "s/^trap -- '//" -e "s/' "$signal"$//"
+}

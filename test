@@ -43,9 +43,9 @@ docker run --detach \
            --name pubsubd-test \
            -p 3000:3000 \
        local/pubsubd 'pubsubd --verbose'
-trap 'docker rm --force pubsubd-test' INT ERR
+trap 'docker rm --force pubsubd-test 2>/dev/null || true' INT ERR EXIT
 debug 'initialize docker logs counter for pubsubd-test container'
-trap "rm -f \"$DOCKER_LOGS_COUNTER\"" EXIT ERR
+trap "$(show_trap_handler_for EXIT); rm -f \"$DOCKER_LOGS_COUNTER\"" INT ERR EXIT
 echo 0 > "$DOCKER_LOGS_COUNTER"
 show_unread_docker_logs pubsubd-test
 
